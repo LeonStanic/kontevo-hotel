@@ -1,0 +1,9 @@
+export { ThemedWrapper } from './ThemedWrapper';
+export { Header } from './Header';
+export { Hero } from './Hero';
+export { About } from './About';
+export { Gallery } from './Gallery';
+export { Rooms } from './Rooms';
+export { BookingForm } from './BookingForm';
+export { Contact } from './Contact';
+export { Footer } from './Footer';
