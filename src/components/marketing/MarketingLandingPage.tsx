@@ -971,7 +971,7 @@ export function MarketingLandingPage() {
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm">Email</p>
-                    <p className="text-white font-medium">info@kontevo.com</p>
+                    <p className="text-white font-medium">leon@kontevo.com</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
