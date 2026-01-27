@@ -214,12 +214,12 @@ export function BookingForm() {
   };
 
   // Steps configuration
-  const allSteps = paymentEnabled 
-    ? ['dates', 'room', 'guest', 'confirm', 'payment'] as const
-    : ['dates', 'room', 'guest', 'confirm'] as const;
+  const allSteps: BookingStep[] = paymentEnabled 
+    ? ['dates', 'room', 'guest', 'confirm', 'payment']
+    : ['dates', 'room', 'guest', 'confirm'];
   
   const getStepIndex = (s: BookingStep) => {
-    const idx = allSteps.indexOf(s as typeof allSteps[number]);
+    const idx = allSteps.indexOf(s);
     return idx >= 0 ? idx : 0;
   };
 

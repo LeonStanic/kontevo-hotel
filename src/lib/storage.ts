@@ -57,12 +57,12 @@ function toBooking(row: {
   special_requests: string | null;
   total_price: number;
   status: string;
-  payment_status: string;
-  payment_intent_id: string | null;
-  amount_paid: number;
+  payment_status?: string;
+  payment_intent_id?: string | null;
+  amount_paid?: number;
   created_at: string;
 }): Booking {
-  return {
+  const booking: Booking = {
     id: row.id,
     propertyId: row.property_id,
     roomTypeId: row.room_type_id,
@@ -75,11 +75,20 @@ function toBooking(row: {
     specialRequests: row.special_requests || '',
     totalPrice: row.total_price,
     status: row.status as Booking['status'],
-    paymentStatus: row.payment_status as Booking['paymentStatus'],
-    paymentIntentId: row.payment_intent_id || undefined,
-    amountPaid: row.amount_paid,
     createdAt: row.created_at,
   };
+  
+  // Add payment info if available
+  if (row.payment_status || row.amount_paid) {
+    booking.payment = {
+      status: (row.payment_status || 'pending') as 'pending' | 'paid' | 'failed' | 'refunded',
+      amount: row.amount_paid || 0,
+      currency: '€',
+      transactionId: row.payment_intent_id || undefined,
+    };
+  }
+  
+  return booking;
 }
 
 export function getBookings(propertyId?: string): Booking[] {
@@ -209,9 +218,9 @@ export async function createBookingAsync(booking: Omit<Booking, 'id' | 'createdA
         special_requests: booking.specialRequests || null,
         total_price: booking.totalPrice,
         status: 'pending',
-        payment_status: booking.paymentStatus || 'pending',
-        payment_intent_id: booking.paymentIntentId || null,
-        amount_paid: booking.amountPaid || 0,
+        payment_status: booking.payment?.status || 'pending',
+        payment_intent_id: booking.payment?.transactionId || null,
+        amount_paid: booking.payment?.amount || 0,
       })
       .select()
       .single();
@@ -708,6 +717,54 @@ export async function removeExternalCalendarAsync(id: string): Promise<boolean> 
   }
   
   return removeExternalCalendar(id);
+}
+
+// Update external calendar sync timestamp
+export function updateExternalCalendarSync(id: string, lastSynced: string): ExternalCalendar | undefined {
+  return updateExternalCalendar(id, { lastSynced });
+}
+
+export async function updateExternalCalendarSyncAsync(id: string, lastSynced: string): Promise<ExternalCalendar | undefined> {
+  return updateExternalCalendarAsync(id, { lastSynced });
+}
+
+// Sync external calendar (fetch and import blocked dates)
+export async function syncExternalCalendar(id: string): Promise<{ success: boolean; imported?: number; error?: string }> {
+  try {
+    // Get the calendar details
+    const calendars = isSupabaseConfigured 
+      ? await getExternalCalendarsAsync() 
+      : getExternalCalendars();
+    
+    const calendar = calendars.find(c => c.id === id);
+    if (!calendar) {
+      return { success: false, error: 'Calendar not found' };
+    }
+
+    // In demo mode, simulate a successful sync
+    if (!isSupabaseConfigured) {
+      // For demo, just update the last synced time
+      updateExternalCalendarSync(id, new Date().toISOString());
+      return { success: true, imported: 0 };
+    }
+
+    // For production with Supabase, call the sync API
+    const response = await fetch('/api/sync-calendar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ calendarId: id }),
+    });
+
+    if (!response.ok) {
+      return { success: false, error: 'Sync failed' };
+    }
+
+    const result = await response.json();
+    return { success: true, imported: result.imported || 0 };
+  } catch (error) {
+    console.error('Error syncing calendar:', error);
+    return { success: false, error: 'Sync failed' };
+  }
 }
 
 // Add blocked dates from external calendar import

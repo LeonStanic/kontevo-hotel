@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -12,8 +12,6 @@ import {
   Search,
   TrendingUp,
   Calendar,
-  Users,
-  DollarSign,
   ExternalLink,
   Settings,
   MoreVertical,
@@ -95,10 +93,9 @@ const DEMO_SUMMARY: OwnerDashboardSummary = {
 };
 
 export default function PropertiesPage() {
-  const [properties, setProperties] = useState<PropertyOverview[]>(DEMO_PROPERTIES);
-  const [summary, setSummary] = useState<OwnerDashboardSummary>(DEMO_SUMMARY);
+  const [properties] = useState<PropertyOverview[]>(DEMO_PROPERTIES);
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(false);
+  const summary = DEMO_SUMMARY;
 
   const filteredProperties = properties.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

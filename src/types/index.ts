@@ -66,7 +66,7 @@ export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 export interface PaymentConfig {
   enabled: boolean;
   advancePaymentPercent: number; // e.g., 30 means 30% advance
-  testMode: boolean; // Demo/test mode vs production
+  testMode?: boolean; // Demo/test mode vs production (defaults to true/demo)
   // For future real payment integration:
   // stripePublicKey?: string;
   // paypalClientId?: string;
@@ -75,36 +75,36 @@ export interface PaymentConfig {
 // WhatsApp notification configuration
 export interface WhatsAppConfig {
   enabled: boolean;
-  ownerPhone: string; // Owner's WhatsApp number (with country code, e.g., +385...)
+  ownerPhone?: string; // Owner's WhatsApp number (with country code, e.g., +385...)
   // Notification preferences
-  notifyOnNewBooking: boolean;
-  notifyOnPayment: boolean;
-  notifyOnDayBefore: boolean; // Guest arriving tomorrow reminder
+  notifyOnNewBooking?: boolean;
+  notifyOnPayment?: boolean;
+  notifyOnDayBefore?: boolean; // Guest arriving tomorrow reminder
 }
 
 // Telegram notification configuration (FREE!)
 export interface TelegramConfig {
   enabled: boolean;
-  botToken: string; // Get from @BotFather
-  chatId: string; // Owner's chat ID or group ID
-  notifyOnNewBooking: boolean;
-  notifyOnPayment: boolean;
-  notifyOnDayBefore: boolean;
+  botToken?: string; // Get from @BotFather
+  chatId?: string; // Owner's chat ID or group ID
+  notifyOnNewBooking?: boolean;
+  notifyOnPayment?: boolean;
+  notifyOnDayBefore?: boolean;
 }
 
 // Email notification configuration
 export interface EmailNotificationsConfig {
   enabled: boolean;
-  notifyOwnerOnBooking: boolean;
-  notifyGuestOnBooking: boolean;
-  notifyGuestOnConfirm: boolean;
+  notifyOwnerOnBooking?: boolean;
+  notifyGuestOnBooking?: boolean;
+  notifyGuestOnConfirm?: boolean;
 }
 
 // Calendar sync configuration
 export interface CalendarSyncConfig {
   enabled: boolean;
-  allowImport: boolean;
-  allowExport: boolean;
+  allowImport?: boolean;
+  allowExport?: boolean;
 }
 
 // Simple feature toggle

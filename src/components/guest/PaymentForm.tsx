@@ -136,11 +136,6 @@ export function PaymentForm({ totalPrice, onPaymentComplete, onBack, onSkip }: P
 
   // Handle skip payment
   const handleSkip = () => {
-    const paymentInfo: PaymentInfo = {
-      status: 'pending',
-      amount: advanceAmount,
-      currency: property.currency,
-    };
     onSkip?.();
   };
 

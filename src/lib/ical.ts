@@ -31,7 +31,7 @@ function formatDateTimeToICal(date: Date): string {
 export function generateICalFeed(bookings: Booking[], blockedDates: BlockedDate[]): string {
   const now = new Date();
   
-  let ical = [
+  const ical = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     `PRODID:-//${property.hotelName}//Booking System//EN`,

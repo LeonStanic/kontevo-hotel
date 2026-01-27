@@ -198,7 +198,7 @@ function RoomDetailDialog({
                 className={`relative w-20 h-14 rounded-md overflow-hidden flex-shrink-0 ${
                   idx === currentPhoto ? 'ring-2' : 'opacity-70 hover:opacity-100'
                 }`}
-                style={{ ringColor: 'var(--theme-primary)' }}
+                style={{ ['--tw-ring-color' as string]: 'var(--theme-primary)' } as React.CSSProperties}
               >
                 <Image src={photo} alt="" fill className="object-cover" />
               </button>

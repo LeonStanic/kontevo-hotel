@@ -16,7 +16,6 @@ import {
   ChevronRight,
   Calendar as CalendarIcon,
   Building2,
-  Users,
   Phone,
   Mail,
 } from 'lucide-react';

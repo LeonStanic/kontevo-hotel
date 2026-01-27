@@ -38,13 +38,13 @@ const getPaymentStatusText = (
   property: PropertyConfig,
   t: ReturnType<typeof getTranslations>
 ): string => {
-  if (booking.paymentStatus === 'paid_advance' && booking.amountPaid) {
-    return `${t.booking.payment.advancePayment}: ${formatCurrency(booking.amountPaid, property.currency)}`;
+  if (booking.payment?.status === 'paid' && booking.payment.amount) {
+    return `${t.payment.advancePayment}: ${formatCurrency(booking.payment.amount, property.currency)}`;
   }
-  if (booking.paymentStatus === 'paid_full') {
-    return t.booking.payment.payFull;
+  if (booking.payment?.status === 'paid') {
+    return t.payment.paid;
   }
-  return t.booking.payment.payLater;
+  return t.payment.pending;
 };
 
 /**
@@ -108,7 +108,7 @@ export async function sendGuestBookingConfirmationEmail(
   booking: Booking,
   property: PropertyConfig
 ): Promise<void> {
-  if (!property.email?.sendEmails) {
+  if (!property.features?.emailNotifications?.enabled || !property.features?.emailNotifications?.notifyGuestOnBooking) {
     return;
   }
 
@@ -119,18 +119,9 @@ export async function sendGuestBookingConfirmationEmail(
   const totalPrice = formatCurrency(booking.totalPrice, property.currency);
   const paymentStatus = getPaymentStatusText(booking, property, t);
 
-  const subject = t.email.bookingConfirmationSubject;
+  const subject = t.email.bookingReceivedSubject;
   
-  const body = t.email.bookingConfirmationBody
-    .replace(/{guestName}/g, booking.guestName)
-    .replace(/{propertyName}/g, property.hotelName)
-    .replace(/{bookingId}/g, booking.id)
-    .replace(/{roomName}/g, roomName)
-    .replace(/{checkInDate}/g, checkInDate)
-    .replace(/{checkOutDate}/g, checkOutDate)
-    .replace(/{guests}/g, booking.guests.toString())
-    .replace(/{totalPrice}/g, totalPrice)
-    .replace(/{paymentStatus}/g, paymentStatus);
+  const body = `${t.email.bookingReceivedTitle}\n\n${t.email.bookingReceivedMessage}\n\n${t.email.bookingReference}: ${booking.id}\n${t.email.accommodation}: ${roomName}\n${t.email.checkIn}: ${checkInDate}\n${t.email.checkOut}: ${checkOutDate}\n${t.email.guests}: ${booking.guests}\n${t.email.total}: ${totalPrice}\n\n${paymentStatus}`;
 
   await sendEmail(
     booking.guestEmail,
@@ -147,7 +138,7 @@ export async function sendOwnerNewBookingNotificationEmail(
   booking: Booking,
   property: PropertyConfig
 ): Promise<void> {
-  if (!property.email?.sendEmails || !property.email?.ownerEmail) {
+  if (!property.features?.emailNotifications?.enabled || !property.features?.emailNotifications?.notifyOwnerOnBooking) {
     return;
   }
 
@@ -161,24 +152,12 @@ export async function sendOwnerNewBookingNotificationEmail(
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
   const dashboardLink = `${baseUrl}/dashboard`;
 
-  const subject = t.email.ownerNewBookingSubject.replace(/{bookingId}/g, booking.id);
+  const subject = `${t.email.newBookingSubject}: ${booking.id}`;
   
-  const body = t.email.ownerNewBookingBody
-    .replace(/{propertyName}/g, property.hotelName)
-    .replace(/{bookingId}/g, booking.id)
-    .replace(/{roomName}/g, roomName)
-    .replace(/{checkInDate}/g, checkInDate)
-    .replace(/{checkOutDate}/g, checkOutDate)
-    .replace(/{guests}/g, booking.guests.toString())
-    .replace(/{guestName}/g, booking.guestName)
-    .replace(/{guestEmail}/g, booking.guestEmail)
-    .replace(/{guestPhone}/g, booking.guestPhone)
-    .replace(/{totalPrice}/g, totalPrice)
-    .replace(/{paymentStatus}/g, paymentStatus)
-    .replace(/{dashboardLink}/g, dashboardLink);
+  const body = `${t.email.newBookingTitle}\n\n${t.email.bookingReference}: ${booking.id}\n${t.email.accommodation}: ${roomName}\n${t.email.checkIn}: ${checkInDate}\n${t.email.checkOut}: ${checkOutDate}\n${t.email.guests}: ${booking.guests}\n\n${t.email.guestInfo}:\n${booking.guestName}\n${booking.guestEmail}\n${booking.guestPhone}\n\n${t.email.total}: ${totalPrice}\n${paymentStatus}\n\n${t.email.goToDashboard}: ${dashboardLink}`;
 
   await sendEmail(
-    property.email.ownerEmail,
+    property.contactInfo.email,
     subject,
     body,
     `${property.hotelName} Booking System <${property.contactInfo.email}>`
@@ -192,7 +171,7 @@ export async function sendGuestBookingConfirmedEmail(
   booking: Booking,
   property: PropertyConfig
 ): Promise<void> {
-  if (!property.email?.sendEmails) {
+  if (!property.features?.emailNotifications?.enabled || !property.features?.emailNotifications?.notifyGuestOnConfirm) {
     return;
   }
 
@@ -203,18 +182,9 @@ export async function sendGuestBookingConfirmedEmail(
   const totalPrice = formatCurrency(booking.totalPrice, property.currency);
   const paymentStatus = getPaymentStatusText(booking, property, t);
 
-  const subject = t.email.ownerBookingConfirmedSubject
-    .replace(/{bookingId}/g, booking.id)
-    .replace(/{propertyName}/g, property.hotelName);
+  const subject = `${t.email.bookingConfirmedSubject} - ${booking.id}`;
   
-  const body = t.email.ownerBookingConfirmedBody
-    .replace(/{guestName}/g, booking.guestName)
-    .replace(/{bookingId}/g, booking.id)
-    .replace(/{propertyName}/g, property.hotelName)
-    .replace(/{roomName}/g, roomName)
-    .replace(/{checkInDate}/g, checkInDate)
-    .replace(/{checkOutDate}/g, checkOutDate)
-    .replace(/{guests}/g, booking.guests.toString())
+  const body = `${t.email.bookingConfirmedTitle}\n\n${t.email.bookingConfirmedMessage}\n\n${t.email.bookingReference}: ${booking.id}\n${t.email.accommodation}: ${roomName}\n${t.email.checkIn}: ${checkInDate}\n${t.email.checkOut}: ${checkOutDate}\n${t.email.guests}: ${booking.guests}`
     .replace(/{totalPrice}/g, totalPrice)
     .replace(/{paymentStatus}/g, paymentStatus);
 

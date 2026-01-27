@@ -134,7 +134,7 @@ export function CalendarSync() {
       } else {
         setSyncError(calendar.id);
       }
-    } catch (err) {
+    } catch {
       setSyncError(calendar.id);
     } finally {
       setSyncingId(null);

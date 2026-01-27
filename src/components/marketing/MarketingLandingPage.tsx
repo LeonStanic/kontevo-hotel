@@ -22,11 +22,8 @@ import {
   ArrowRight,
   Zap,
   Shield,
-  Clock,
-  Users,
   Building2,
   CalendarCheck,
-  TrendingUp,
   Phone,
   Send,
   Play,
@@ -258,10 +255,93 @@ export function MarketingLandingPage() {
     propertyType: '',
     message: '',
   });
+  const [formStatus, setFormStatus] = useState<{
+    loading: boolean;
+    success: boolean;
+    error: string | null;
+  }>({
+    loading: false,
+    success: false,
+    error: null,
+  });
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
     setMobileMenuOpen(false);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Basic validation
+    if (!formData.name.trim() || !formData.email.trim()) {
+      setFormStatus({
+        loading: false,
+        success: false,
+        error: 'Ime i email su obavezni.',
+      });
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setFormStatus({
+        loading: false,
+        success: false,
+        error: 'Nevažeća email adresa.',
+      });
+      return;
+    }
+
+    setFormStatus({ loading: true, success: false, error: null });
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setFormStatus({
+          loading: false,
+          success: true,
+          error: null,
+        });
+        
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          propertyType: '',
+          message: '',
+        });
+
+        // Clear success message after 5 seconds
+        setTimeout(() => {
+          setFormStatus(prev => ({ ...prev, success: false }));
+        }, 5000);
+      } else {
+        setFormStatus({
+          loading: false,
+          success: false,
+          error: data.error || 'Došlo je do greške. Molimo pokušajte ponovno.',
+        });
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      setFormStatus({
+        loading: false,
+        success: false,
+        error: 'Došlo je do greške. Molimo pokušajte ponovno.',
+      });
+    }
   };
 
   return (
@@ -917,78 +997,131 @@ export function MarketingLandingPage() {
 
             <Card className="bg-white text-gray-900">
               <CardContent className="p-8">
-                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="name">Ime i prezime</Label>
+                {formStatus.success ? (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 flex items-center justify-center">
+                      <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      Hvala vam na upitu!
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      Vaš upit je uspješno poslan. Javit ćemo vam se unutar 24 sata.
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => setFormStatus({ loading: false, success: false, error: null })}
+                    >
+                      Pošalji novi upit
+                    </Button>
+                  </div>
+                ) : (
+                  <form className="space-y-6" onSubmit={handleSubmit}>
+                    {formStatus.error && (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <p className="text-sm text-red-600">{formStatus.error}</p>
+                      </div>
+                    )}
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="name">Ime i prezime *</Label>
                       <Input 
                         id="name" 
                         placeholder="Ivan Horvat"
                         value={formData.name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                        onChange={(e) => {
+                          setFormData(prev => ({ ...prev, name: e.target.value }));
+                          if (formStatus.error) {
+                            setFormStatus(prev => ({ ...prev, error: null }));
+                          }
+                        }}
                         className="mt-1.5"
+                        required
+                        disabled={formStatus.loading}
                       />
+                      </div>
+                      <div>
+                        <Label htmlFor="email">Email *</Label>
+                        <Input 
+                          id="email" 
+                          type="email"
+                          placeholder="ivan@email.com"
+                          value={formData.email}
+                          onChange={(e) => {
+                            setFormData(prev => ({ ...prev, email: e.target.value }));
+                            if (formStatus.error) {
+                              setFormStatus(prev => ({ ...prev, error: null }));
+                            }
+                          }}
+                          className="mt-1.5"
+                          required
+                          disabled={formStatus.loading}
+                        />
+                      </div>
                     </div>
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="phone">Telefon</Label>
+                        <Input 
+                          id="phone" 
+                          placeholder="+385 91 123 4567"
+                          value={formData.phone}
+                          onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                          className="mt-1.5"
+                          disabled={formStatus.loading}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="propertyType">Tip smještaja</Label>
+                        <Input 
+                          id="propertyType" 
+                          placeholder="Apartman, vila, B&B..."
+                          value={formData.propertyType}
+                          onChange={(e) => setFormData(prev => ({ ...prev, propertyType: e.target.value }))}
+                          className="mt-1.5"
+                          disabled={formStatus.loading}
+                        />
+                      </div>
+                    </div>
+
                     <div>
-                      <Label htmlFor="email">Email</Label>
-                      <Input 
-                        id="email" 
-                        type="email"
-                        placeholder="ivan@email.com"
-                        value={formData.email}
-                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                        className="mt-1.5"
+                      <Label htmlFor="message">Poruka (opcionalno)</Label>
+                      <Textarea 
+                        id="message" 
+                        placeholder="Opišite vaš smještaj i što vas zanima..."
+                        value={formData.message}
+                        onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+                        className="mt-1.5 min-h-[120px]"
+                        disabled={formStatus.loading}
                       />
                     </div>
-                  </div>
 
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="phone">Telefon</Label>
-                      <Input 
-                        id="phone" 
-                        placeholder="+385 91 123 4567"
-                        value={formData.phone}
-                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                        className="mt-1.5"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="propertyType">Tip smještaja</Label>
-                      <Input 
-                        id="propertyType" 
-                        placeholder="Apartman, vila, B&B..."
-                        value={formData.propertyType}
-                        onChange={(e) => setFormData(prev => ({ ...prev, propertyType: e.target.value }))}
-                        className="mt-1.5"
-                      />
-                    </div>
-                  </div>
+                    <Button 
+                      type="submit"
+                      size="lg"
+                      className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50"
+                      disabled={formStatus.loading}
+                    >
+                      {formStatus.loading ? (
+                        <>
+                          <span className="animate-spin mr-2">⏳</span>
+                          Šalje se...
+                        </>
+                      ) : (
+                        <>
+                          Pošalji upit
+                          <Send className="w-4 h-4 ml-2" />
+                        </>
+                      )}
+                    </Button>
 
-                  <div>
-                    <Label htmlFor="message">Poruka (opcionalno)</Label>
-                    <Textarea 
-                      id="message" 
-                      placeholder="Opišite vaš smještaj i što vas zanima..."
-                      value={formData.message}
-                      onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-                      className="mt-1.5 min-h-[120px]"
-                    />
-                  </div>
-
-                  <Button 
-                    type="submit"
-                    size="lg"
-                    className="w-full bg-emerald-500 hover:bg-emerald-600"
-                  >
-                    Pošalji upit
-                    <Send className="w-4 h-4 ml-2" />
-                  </Button>
-
-                  <p className="text-center text-sm text-gray-500">
-                    Odgovaramo unutar 24 sata. Vaši podaci su sigurni.
-                  </p>
-                </form>
+                    <p className="text-center text-sm text-gray-500">
+                      Odgovaramo unutar 24 sata. Vaši podaci su sigurni.
+                    </p>
+                  </form>
+                )}
               </CardContent>
             </Card>
           </div>

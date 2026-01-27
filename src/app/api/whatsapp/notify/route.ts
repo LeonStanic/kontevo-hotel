@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Booking, PropertyConfig, RoomType } from '@/types';
 import { translations } from '@/lib/i18n/translations';
-import { format } from 'date-fns';
+import { format, Locale } from 'date-fns';
 import { hr, enUS, de, it, sl } from 'date-fns/locale';
 
 // Date locale mapping
