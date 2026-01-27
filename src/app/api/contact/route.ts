@@ -25,7 +25,9 @@ export async function POST(request: NextRequest) {
 
     // Prepare email content
     // Set CONTACT_EMAIL in .env.local to receive contact form submissions
-    const ownerEmail = process.env.CONTACT_EMAIL || process.env.RESEND_FROM_EMAIL || 'info@kontevo.com';
+    const ownerEmail = process.env.CONTACT_EMAIL || process.env.RESEND_FROM_EMAIL || 'info@kontevo.eu';
+    // Use RESEND_FROM_EMAIL or default to verified domain (kontevo.eu)
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@kontevo.eu';
     const subject = `Novi upit sa marketing stranice - ${name}`;
     
     const emailBody = `
@@ -48,12 +50,19 @@ Ova poruka je poslana sa marketing stranice Kontevo sustava.
       ownerEmail,
       subject,
       emailBody,
-      'Kontevo Marketing <noreply@kontevo.com>'
+      `Kontevo Marketing <${fromEmail}>`
     );
 
     if (!emailResult.success) {
       console.error('Failed to send contact email:', emailResult.error);
-      // Still return success to user, but log the error
+      // Return error to help debug
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: `Greška pri slanju emaila: ${emailResult.error || 'Nepoznata greška'}` 
+        },
+        { status: 500 }
+      );
     }
 
     // Optional: Send confirmation email to the user
@@ -76,12 +85,18 @@ Srdačan pozdrav,
 Tim Kontevo
 `;
 
-    await sendEmail(
+    // Send confirmation email (non-blocking - don't fail if this fails)
+    const confirmationResult = await sendEmail(
       email,
       confirmationSubject,
       confirmationBody,
-      'Kontevo <noreply@kontevo.com>'
+      `Kontevo <${fromEmail}>`
     );
+    
+    if (!confirmationResult.success) {
+      console.error('Failed to send confirmation email:', confirmationResult.error);
+      // Don't fail the whole request if confirmation email fails
+    }
 
     return NextResponse.json({ 
       success: true,

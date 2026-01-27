@@ -980,7 +980,7 @@ export function MarketingLandingPage() {
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm">Telefon</p>
-                    <p className="text-white font-medium">+385 91 234 5678</p>
+                    <p className="text-white font-medium">+385 91 196 2005</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
