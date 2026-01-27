@@ -1,32 +1,15 @@
-import { property } from '@/config/property';
-import { PropertyProvider } from '@/context/PropertyContext';
-import { 
-  ThemedWrapper, 
-  Header, 
-  Hero, 
-  About, 
-  Gallery, 
-  Rooms, 
-  BookingForm, 
-  Contact, 
-  Footer 
-} from '@/components/guest';
+import { MarketingLandingPage } from '@/components/marketing';
+
+export const metadata = {
+  title: 'Kontevo - Vlastita Booking Web Stranica bez Provizija',
+  description: 'Profesionalna web stranica za direktne rezervacije. Bez provizija, bez mjesečnih naknada. Online rezervacije, plaćanja, Telegram obavijesti i više.',
+  openGraph: {
+    title: 'Kontevo - Vlastita Booking Web Stranica bez Provizija',
+    description: 'Prestanite plaćati 15-20% provizije. Dobijte profesionalnu booking stranicu s online rezervacijama i automatskim obavijestima.',
+    type: 'website',
+  },
+};
 
 export default function HomePage() {
-  return (
-    <PropertyProvider property={property}>
-      <ThemedWrapper theme={property.theme}>
-        <Header />
-        <main>
-          <Hero />
-          <About />
-          <Gallery />
-          <Rooms />
-          <BookingForm />
-          <Contact />
-      </main>
-        <Footer />
-      </ThemedWrapper>
-    </PropertyProvider>
-  );
+  return <MarketingLandingPage />;
 }
