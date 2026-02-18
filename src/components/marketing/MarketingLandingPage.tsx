@@ -817,8 +817,8 @@ export function MarketingLandingPage() {
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <PricingCard
               name="Standard"
-              price="€1.000"
-              monthlyPrice="€50"
+              price="€700"
+              monthlyPrice="€20"
               description="Kompletno rješenje za jedan objekt"
               highlighted
               features={[
